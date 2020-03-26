@@ -1,31 +1,110 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@rick043 
+openremote
+/
+or-satellite
+Private
+11
+00
+ Code Issues 3 Pull requests 0 Actions Projects 1 Wiki Security Insights
+or-satellite
+/
+.gitignore
+Want to use a .gitignore template?
+ 
+
+1
 HELP.md
+2
 target/
+3
 !.mvn/wrapper/maven-wrapper.jar
+4
 !**/src/main/**
+5
 !**/src/test/**
-
+6
+​
+7
 ### STS ###
+8
 .apt_generated
+9
 .classpath
+10
 .factorypath
+11
 .project
+12
 .settings
+13
 .springBeans
+14
 .sts4-cache
-
+15
+​
+16
 ### IntelliJ IDEA ###
+17
 .idea
+18
 *.iws
+19
 *.iml
+20
 *.ipr
-
+21
+​
+22
 ### NetBeans ###
+23
 /nbproject/private/
+24
 /nbbuild/
+25
 /dist/
+26
 /nbdist/
+27
 /.nb-gradle/
+28
 build/
-
+29
+​
+30
 ### VS Code ###
+31
 .vscode/
+32
+​
+@rick043
+Commit changes
+Commit summary
+Update .gitignore
+Optional extended description
+Add an optional extended description…
+
+Choose which email address to associate with this commit
+
+ Commit directly to the master branch.
+ Create a new branch for this commit and start a pull request. Learn more about pull requests.
+ 
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
