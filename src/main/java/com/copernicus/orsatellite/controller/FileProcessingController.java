@@ -15,31 +15,13 @@ public class FileProcessingController {
 
     boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
-    @GetMapping("/testshell1")
-    public void TestShell1() throws IOException, InterruptedException {
-        String homeDirectory = System.getProperty("user.home");
-        Process process;
-        if (isWindows) {
-            process = Runtime.getRuntime()
-                    .exec(String.format("cmd.exe /c dir %s", homeDirectory));
-        } else {
-            process = Runtime.getRuntime()
-                    .exec(String.format("sh -c ls %s", homeDirectory));
-        }
-        FileProcessingImpl streamGobbler =
-                new FileProcessingImpl(process.getInputStream(), System.out::println);
-        Executors.newSingleThreadExecutor().submit(streamGobbler);
-        int exitCode = process.waitFor();
-        assert exitCode == 0;
-    }
-
-    @GetMapping("/testshell2")
+    @GetMapping("/testshell")
     public void TestShell2() throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder();
         if (isWindows) {
-            builder.command("cmd.exe", "/c", "dir");
+            builder.command("cmd.exe", "/c", "ipconfig", "/all");
         } else {
-            builder.command("sh", "-c", "ls");
+            builder.command("ls", "-ltrh");
         }
         builder.directory(new File(System.getProperty("user.home")));
         Process process = builder.start();
