@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="77ad7606-5b89-441e-b442-e05feb388cca" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/copernicus/orsatellite/service/ReadNetcdf.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="importAutomatically" value="true" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1Zz5d1g3GqbH4hm4C2GRX6Ghnpo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RequestMappingsPanelOrder0" value="0" />
+    <property name="RequestMappingsPanelOrder1" value="1" />
+    <property name="RequestMappingsPanelWidth0" value="75" />
+    <property name="RequestMappingsPanelWidth1" value="75" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../netcdf-java/netcdf4" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Git\or-satellite\src\main\java" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="CopernicusApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="demo" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.copernicus.orsatellite.CopernicusApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="77ad7606-5b89-441e-b442-e05feb388cca" name="Default Changelist" comment="" />
+      <created>1585829166072</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1585829166072</updated>
+      <workItem from="1585829172472" duration="3070000" />
+      <workItem from="1585898160793" duration="1484000" />
+      <workItem from="1585902023294" duration="3419000" />
+      <workItem from="1585907112673" duration="16000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="999" y="253" key="#Dockerfile" timestamp="1585902064674">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="999" y="253" key="#Dockerfile/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585902064674" />
+    <state x="1123" y="571" width="368" height="258" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages" timestamp="1585904777642">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1123" y="571" width="368" height="258" key="#com.intellij.refactoring.move.moveClassesOrPackages.MoveClassesOrPackagesDialog.packages/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585904777642" />
+    <state x="1060" y="454" key="FileChooserDialogImpl" timestamp="1585907126209">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1060" y="454" key="FileChooserDialogImpl/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585907126209" />
+    <state width="2517" height="401" key="GridCell.Tab.0.bottom" timestamp="1585905451150">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.0.bottom/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585905451150" />
+    <state width="2517" height="401" key="GridCell.Tab.0.center" timestamp="1585905451150">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.0.center/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585905451150" />
+    <state width="2517" height="401" key="GridCell.Tab.0.left" timestamp="1585905451150">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.0.left/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585905451150" />
+    <state width="2517" height="401" key="GridCell.Tab.0.right" timestamp="1585905451150">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.0.right/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585905451150" />
+    <state width="2517" height="401" key="GridCell.Tab.1.bottom" timestamp="1585902012168">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.1.bottom/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585902012168" />
+    <state width="2517" height="401" key="GridCell.Tab.1.center" timestamp="1585902012168">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.1.center/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585902012168" />
+    <state width="2517" height="401" key="GridCell.Tab.1.left" timestamp="1585902012168">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.1.left/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585902012168" />
+    <state width="2517" height="401" key="GridCell.Tab.1.right" timestamp="1585902012168">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2517" height="401" key="GridCell.Tab.1.right/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585902012168" />
+    <state x="810" y="354" key="Maven.ArtifactSearchDialog" timestamp="1585904678439">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="810" y="354" key="Maven.ArtifactSearchDialog/0.0.2560.1400/-1920.349.1920.1040@0.0.2560.1400" timestamp="1585904678439" />
+  </component>
+</project>
