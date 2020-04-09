@@ -7,11 +7,11 @@ namespace or_satellite.Service
 {
     public class RunShellCommand
     {
-        public string DownloadFile()
+        public string[] DownloadFile()
         {
             // var escapedArgs = cmd.Replace("\"", "\\\"");
             var downloadFile =
-                "curl https://filebin.net/ucm0428h6yv6vfz8/filtered_merged_file.nc?t=19wm9v0i -o filtered_merged_file.nc";
+                "wget --no-check-certificate \"https://tinyurl.com/rlw3uhs\" -O filtered_merged_file.nc";
 
             var process = new Process()
             {
@@ -27,11 +27,11 @@ namespace or_satellite.Service
             process.Start();
             // string result = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
-            string result = ProcessFile();
+            string[] result = ProcessFile();
             return result;
         }
 
-        private string ProcessFile()
+        private string[] ProcessFile()
         {
             var processFile =
                 "ncks -s \"%.3f\\n\" -F -H -C -v atmospheric_temperature_profile filtered_merged_file.nc  > Atmospheric_temperature_profile_formatted.txt";
@@ -48,16 +48,15 @@ namespace or_satellite.Service
                 }
             };
             process.Start();
-            // string result = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
-            string result = ReadFile();
+            string[] result = ReadFile();
             return result;
         }
 
-        private string ReadFile()
+        private string[] ReadFile()
         {
             var readFile =
-                "tail -n 100 Atmospheric_temperature_profile_formatted.txt";
+                "cat Atmospheric_temperature_profile_formatted.txt";
 
             var process = new Process()
             {
@@ -71,8 +70,51 @@ namespace or_satellite.Service
                 }
             };
             process.Start();
-            string result = process.StandardOutput.ReadToEnd();
+            string result = process.StandardOutput.ReadToEnd().Replace("n", "\n");
             process.WaitForExit();
+            string[] resultArray = SetResultToArray(result);
+            DeleteFiles();
+            return resultArray;
+        }
+        private void DeleteFiles()
+        {
+            var deleteFile1 =
+                "rm Atmospheric_temperature_profile_formatted.txt";
+            var deleteFile2 = "rm filtered_merged_file.nc";
+
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{deleteFile1}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+            process.Start();
+            process.WaitForExit();
+            process = new Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{deleteFile2}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+
+            };
+            process.Start();
+            process.WaitForExit();
+        }
+
+
+        private string[] SetResultToArray(string input)
+        {
+            string[] result = input.Split("\n");
             return result;
         }
     }

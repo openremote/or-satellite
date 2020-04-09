@@ -11,10 +11,10 @@ namespace or_satellite.Controllers
         public RunShellCommand runShellCommand = new RunShellCommand();
 
         [HttpGet]
-        public string getDate(string input)
+        public IActionResult getDate(string input)
         {
             var output = runShellCommand.DownloadFile();
-            return output;
+            return new JsonResult(output);
         }
     }
 }
