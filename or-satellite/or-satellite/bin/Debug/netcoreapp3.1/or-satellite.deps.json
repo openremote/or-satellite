@@ -24,6 +24,7 @@
     ".NETCoreApp,Version=v3.1": {
       "or-satellite/1.0.0": {
         "dependencies": {
+          "CopernicusOpenCSharp": "0.2.0",
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "1.9.10",
           "SSH.NET": "2016.1.0",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
@@ -316,6 +317,20 @@
           "or-satellite.dll": {}
         }
       },
+      "CopernicusOpenCSharp/0.2.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "11.0.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/CopernicusOpenCSharp.dll": {
+            "assemblyVersion": "0.2.0.0",
+            "fileVersion": "0.2.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/CopernicusOpenCSharp.dll": {}
+        }
+      },
       "Microsoft.CSharp/4.0.1": {
         "dependencies": {
           "System.Collections": "4.0.11",
@@ -344,6 +359,17 @@
           "Microsoft.NETCore.Platforms": "1.0.1",
           "Microsoft.NETCore.Targets": "1.0.1",
           "System.Runtime": "4.1.0"
+        }
+      },
+      "Newtonsoft.Json/11.0.2": {
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "11.0.0.0",
+            "fileVersion": "11.0.2.21924"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       },
       "runtime.native.System/4.0.0": {
@@ -2601,6 +2627,13 @@
       "serviceable": false,
       "sha512": ""
     },
+    "CopernicusOpenCSharp/0.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-g7VZ7wKbsqpIA4etNYVQwgEvAvNMsssqvNYF/khkvDx5xPjjN3TshlBQmwZgeFdkNqarxPdy4HfbEAZg2U3AjQ==",
+      "path": "copernicusopencsharp/0.2.0",
+      "hashPath": "copernicusopencsharp.0.2.0.nupkg.sha512"
+    },
     "Microsoft.CSharp/4.0.1": {
       "type": "package",
       "serviceable": true,
@@ -2635,6 +2668,13 @@
       "sha512": "sha512-fQnBHO9DgcmkC9dYSJoBqo6sH1VJwJprUHh8F3hbcRlxiQiBUuTntdk8tUwV490OqC2kQUrinGwZyQHTieuXRA==",
       "path": "microsoft.win32.primitives/4.0.1",
       "hashPath": "microsoft.win32.primitives.4.0.1.nupkg.sha512"
+    },
+    "Newtonsoft.Json/11.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IvJe1pj7JHEsP8B8J8DwlMEx8UInrs/x+9oVY+oCD13jpLu4JbJU2WCIsMRn5C4yW9+DgkaO8uiVE5VHKjpmdQ==",
+      "path": "newtonsoft.json/11.0.2",
+      "hashPath": "newtonsoft.json.11.0.2.nupkg.sha512"
     },
     "runtime.native.System/4.0.0": {
       "type": "package",

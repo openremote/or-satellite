@@ -18,5 +18,9 @@ D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satelli
 D:\Git\or-satellite\or-satellite\or-satellite\bin\Debug\netcoreapp3.1\Renci.SshNet.dll
 D:\Git\or-satellite\or-satellite\or-satellite\bin\Debug\netcoreapp3.1\SshNet.Security.Cryptography.dll
 D:\Git\or-satellite\or-satellite\or-satellite\bin\Debug\netcoreapp3.1\System.Xml.XPath.XmlDocument.dll
-D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satellite.MvcApplicationPartsAssemblyInfo.cache
 D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satellite.csproj.CopyComplete
+D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satellite.genruntimeconfig.cache
+D:\Git\or-satellite\or-satellite\or-satellite\bin\Debug\netcoreapp3.1\CopernicusOpenCSharp.dll
+D:\Git\or-satellite\or-satellite\or-satellite\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satellite.csproj.CoreCompileInputs.cache
+D:\Git\or-satellite\or-satellite\or-satellite\obj\Debug\netcoreapp3.1\or-satellite.MvcApplicationPartsAssemblyInfo.cache

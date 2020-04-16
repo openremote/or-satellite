@@ -2,6 +2,18 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
+      "CopernicusOpenCSharp/0.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Newtonsoft.Json": "11.0.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/CopernicusOpenCSharp.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/CopernicusOpenCSharp.dll": {}
+        }
+      },
       "Microsoft.CSharp/4.0.1": {
         "type": "package",
         "dependencies": {
@@ -63,6 +75,15 @@
         },
         "compile": {
           "ref/netstandard1.3/_._": {}
+        }
+      },
+      "Newtonsoft.Json/11.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       },
       "runtime.native.System/4.0.0": {
@@ -939,6 +960,18 @@
     }
   },
   "libraries": {
+    "CopernicusOpenCSharp/0.2.0": {
+      "sha512": "g7VZ7wKbsqpIA4etNYVQwgEvAvNMsssqvNYF/khkvDx5xPjjN3TshlBQmwZgeFdkNqarxPdy4HfbEAZg2U3AjQ==",
+      "type": "package",
+      "path": "copernicusopencsharp/0.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "copernicusopencsharp.0.2.0.nupkg.sha512",
+        "copernicusopencsharp.nuspec",
+        "lib/netstandard2.0/CopernicusOpenCSharp.dll"
+      ]
+    },
     "Microsoft.CSharp/4.0.1": {
       "sha512": "17h8b5mXa87XYKrrVqdgZ38JefSUqLChUQpXgSnpzsM0nDOhE40FTeNWOJ/YmySGV6tG6T8+hjz6vxbknHJr6A==",
       "type": "package",
@@ -1126,6 +1159,36 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._"
+      ]
+    },
+    "Newtonsoft.Json/11.0.2": {
+      "sha512": "IvJe1pj7JHEsP8B8J8DwlMEx8UInrs/x+9oVY+oCD13jpLu4JbJU2WCIsMRn5C4yW9+DgkaO8uiVE5VHKjpmdQ==",
+      "type": "package",
+      "path": "newtonsoft.json/11.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/Newtonsoft.Json.dll",
+        "lib/portable-net40+sl5+win8+wp8+wpa81/Newtonsoft.Json.xml",
+        "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.dll",
+        "lib/portable-net45+win8+wp8+wpa81/Newtonsoft.Json.xml",
+        "newtonsoft.json.11.0.2.nupkg.sha512",
+        "newtonsoft.json.nuspec"
       ]
     },
     "runtime.native.System/4.0.0": {
@@ -3986,6 +4049,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
+      "CopernicusOpenCSharp >= 0.2.0",
       "Microsoft.VisualStudio.Azure.Containers.Tools.Targets >= 1.9.10",
       "SSH.NET >= 2016.1.0"
     ]
@@ -4027,6 +4091,10 @@
     "frameworks": {
       "netcoreapp3.1": {
         "dependencies": {
+          "CopernicusOpenCSharp": {
+            "target": "Package",
+            "version": "[0.2.0, )"
+          },
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
             "target": "Package",
             "version": "[1.9.10, )"
@@ -4054,7 +4122,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
       }
     }
   }

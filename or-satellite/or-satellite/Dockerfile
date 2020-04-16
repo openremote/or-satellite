@@ -23,4 +23,5 @@ ENTRYPOINT ["dotnet", "or-satellite.dll"]
 
 RUN apt-get update
 RUN apt-get install -y \
-	nco
+	nco \
+	wget

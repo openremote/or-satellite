@@ -16,3 +16,7 @@ D:\Git\or-satellite\or-satellite\or-satellite\obj\Release\netcoreapp3.1\or-satel
 D:\Git\or-satellite\or-satellite\or-satellite\obj\Release\netcoreapp3.1\or-satellite.RazorTargetAssemblyInfo.cache
 D:\Git\or-satellite\or-satellite\or-satellite\obj\Release\netcoreapp3.1\or-satellite.dll
 D:\Git\or-satellite\or-satellite\or-satellite\obj\Release\netcoreapp3.1\or-satellite.pdb
+D:\Git\or-satellite\or-satellite\or-satellite\bin\Release\netcoreapp3.1\Renci.SshNet.dll
+D:\Git\or-satellite\or-satellite\or-satellite\bin\Release\netcoreapp3.1\SshNet.Security.Cryptography.dll
+D:\Git\or-satellite\or-satellite\or-satellite\bin\Release\netcoreapp3.1\System.Xml.XPath.XmlDocument.dll
+D:\Git\or-satellite\or-satellite\or-satellite\obj\Release\netcoreapp3.1\or-satellite.csproj.CopyComplete
