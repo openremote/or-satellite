@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using CopernicusOpenCSharp;
 using System.Threading.Tasks;
 using CopernicusOpenCSharp.Extensions;
@@ -10,6 +12,10 @@ namespace or_satellite.Service
 {
     public class CopernicusGetData
     {
+        private HttpClient _client = new HttpClient();
+        private string username = "openremote";
+        private string password = "cOs81$vZ^1Wj";
+        
         public async Task<QueryId> GetDataAsync(double longitude, double latitude)
         {
             CopernicusService service = new CopernicusService("openremote", "cOs81$vZ^1Wj");
@@ -49,11 +55,18 @@ namespace or_satellite.Service
             string startOfDay = DateTime.UtcNow.ToString("yyyy-MM-ddT00:00:00.000Z");
 
             string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({longitude}, {latitude})\") AND ( beginPosition:[{startOfDay} TO {endOfDay}] AND endPosition:[{startOfDay} TO {endOfDay}] ) AND ( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))";
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",Convert.ToBase64String(
+                System.Text.Encoding.ASCII.GetBytes(
+                    $"{username}:{password}")));
+            var result = await _client.GetAsync(requestUri);
+
+            result.EnsureSuccessStatusCode();
+            var response = await result.Content.ReadAsAsync<Feed>();
             
             //TODO: HTTP CLIENT
             //TODO: request met url
 
-            return requestUri;
+            return response.Id;
         }
 
 

@@ -27,7 +27,7 @@ namespace or_satellite.Controllers
         [HttpGet("getid")]
         public async Task<string> GetId(double longitude, double latitude)
         {
-            string output = await copernicus.GetId(longitude, latitude);
+            var output = await copernicus.GetId(longitude, latitude);
 
             return output;
         }
