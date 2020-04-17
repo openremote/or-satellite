@@ -513,3 +513,5 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/windows,dotnetcore,aspnetcore,visualstudio
+
+or-satellite/Copernicus

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using or_satellite.Service;
 using System.Threading.Tasks;
+using or_satellite.Models;
 
 namespace or_satellite.Controllers
 {
@@ -9,23 +11,9 @@ namespace or_satellite.Controllers
     public class CopernicusController : Controller
     {
         private CopernicusGetData copernicus = new CopernicusGetData();
-   
-        [HttpGet]
-        public async Task<IActionResult> IndexAsync(double longitude, double latitude)
-        {
-            var output = await copernicus.GetDataAsync(longitude, latitude);
-
-            return new OkObjectResult(output);
-        }
-        
-        [HttpGet("downloadfile")]
-        public async Task DownloadFile()
-        {
-            await copernicus.Test();
-        }
 
         [HttpGet("getid")]
-        public async Task<string> GetId(double longitude, double latitude)
+        public async Task<IEnumerable<string>> GetId(double longitude, double latitude)
         {
             var output = await copernicus.GetId(longitude, latitude);
 
