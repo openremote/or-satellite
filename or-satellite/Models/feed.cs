@@ -28,7 +28,7 @@ namespace or_satellite.Models
 
         private string idField;
 
-        private byte totalResultsField;
+        private ushort totalResultsField;
 
         private byte startIndexField;
 
@@ -107,7 +107,7 @@ namespace or_satellite.Models
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Namespace = "http://a9.com/-/spec/opensearch/1.1/")]
-        public byte totalResults
+        public ushort totalResults
         {
             get
             {
