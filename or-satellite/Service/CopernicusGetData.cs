@@ -20,10 +20,10 @@ namespace or_satellite.Service
     public class CopernicusGetData
     {
         private HttpClient _client = new HttpClient();
-        private string username;
-        private string password;
+        private readonly string username;
+        private readonly string password;
 
-        static Progress<double> myProgress = new Progress<double>();
+        static readonly Progress<double> myProgress = new Progress<double>();
         private static double old = 0;
 
         public CopernicusGetData(string username, string password)
@@ -50,7 +50,12 @@ namespace or_satellite.Service
             string endOfDay = $"{date}T23:59:59.999Z";
             string startOfDay = $"{date}T00:00:00.000Z";
 
-            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({longitude}, {latitude})\" ) AND ( beginPosition:[{startOfDay} TO {endOfDay}] AND endPosition:[{startOfDay} TO {endOfDay}] ) AND ( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))&sortedby=ingestiondate&order=desc";
+            // ( footprint:\"Intersects({longitude}, {latitude})\" )
+
+            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects(POLYGON((5.4300540144591345 51.408545506027025,5.532676234946037 51.408545506027025,5.532676234946037 51.469733336498734,5.4300540144591345 51.469733336498734,5.4300540144591345 51.408545506027025)))\" ) AND " +
+                                $"( beginPosition:[{startOfDay} TO {endOfDay}] AND endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
+                                $"( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
+                                $"&sortedby=ingestiondate&order=desc";
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",Convert.ToBase64String(
                 System.Text.Encoding.ASCII.GetBytes(
                     $"{username}:{password}")));
@@ -211,7 +216,7 @@ namespace or_satellite.Service
 
         public IEnumerable<string> GetLocationInfo(string longitude, string latitude, DateTime date)
         {
-            string command = $"./LocSearchCore -coords {latitude} {longitude} {date.ToString("dd-MM-yyyy")}/";
+            string command = $"./LocSearchCore -coords {latitude} {longitude} {date:dd-MM-yyyy}/";
             IEnumerable<string> output = ExecuteCommandWithOutput(command);
 
             return output;
@@ -234,8 +239,5 @@ namespace or_satellite.Service
             if (!Directory.Exists("/app/Copernicus/Processed"))
                 Directory.CreateDirectory("/app/Copernicus/Processed");
         }
-
-
-
     }
 }
