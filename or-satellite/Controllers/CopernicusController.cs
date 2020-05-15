@@ -56,18 +56,5 @@ namespace or_satellite.Controllers
 
             return output;
         }
-
-        [HttpGet("getValue")]
-        public string GetValues(string longitude, string latitude, string? date)
-        {
-            if (string.IsNullOrEmpty(date))
-            {
-                date = DateTime.Now.ToString("yyyy-MM-dd");
-            }
-
-            string output = locSearch.Search(latitude, longitude, date);
-
-            return output;
-        }
     }
 }
