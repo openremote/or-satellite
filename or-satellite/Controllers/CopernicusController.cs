@@ -44,10 +44,15 @@ namespace or_satellite.Controllers
             copernicus.ProcessData(date);
         }
 
-        [HttpGet("locationInfo")]
-        public IEnumerable<string> GetLocationInfo(string longitude, string latitude, DateTime date)
+        [HttpGet("getValue")]
+        public string GetValues(string longitude, string latitude, string? date)
         {
-            IEnumerable<string> output = copernicus.GetLocationInfo(longitude, latitude, date);
+            if (string.IsNullOrEmpty(date))
+            {
+                date = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+
+            string output = locSearch.Search(latitude, longitude, date);
 
             return output;
         }
