@@ -14,10 +14,12 @@ namespace or_satellite.Controllers
     public class CopernicusController : Controller
     {
         private CopernicusGetData copernicus;
+        private LocationSearch locSearch;
 
-        public CopernicusController(CopernicusGetData copernicus)
+        public CopernicusController(CopernicusGetData copernicus, LocationSearch locSearch)
         {
             this.copernicus = copernicus;
+            this.locSearch = locSearch;
         }
 
         [HttpGet("getid")]
@@ -46,6 +48,19 @@ namespace or_satellite.Controllers
         public IEnumerable<string> GetLocationInfo(string longitude, string latitude, DateTime date)
         {
             IEnumerable<string> output = copernicus.GetLocationInfo(longitude, latitude, date);
+
+            return output;
+        }
+
+        [HttpGet("getValue")]
+        public string GetValues(string longitude, string latitude, string? date)
+        {
+            if (string.IsNullOrEmpty(date))
+            {
+                date = DateTime.Now.ToString("yyyy-MM-dd");
+            }
+
+            string output = locSearch.Search(latitude, longitude, date);
 
             return output;
         }

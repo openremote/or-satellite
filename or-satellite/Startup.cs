@@ -35,6 +35,7 @@ namespace or_satellite
                 return new CopernicusGetData(result.Username, result.Password);
             });
             services.AddTransient<CopernicusController>();
+            services.AddTransient<LocationSearch>();
         }
 
 
