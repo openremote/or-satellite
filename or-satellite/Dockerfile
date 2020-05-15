@@ -23,5 +23,8 @@ ENTRYPOINT ["dotnet", "or-satellite.dll"]
 
 RUN apt-get update
 RUN apt-get install -y \
-	nco \
-	wget
+	nco
+
+RUN mkdir Copernicus Copernicus/Downloads Copernicus/Extraction Copernicus/Processed
+
+RUN curl https://github.com/Siyabent/LocSearch/releases/download/v0.1/LocSearchCore > /app/Copernicus/LocSearchCore
