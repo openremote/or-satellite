@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace or_satellite.Models
 {
-    class GeoCoordinate
+    public class GeoCoordinate
     {
         public double Latitude;
         public double Longitude;

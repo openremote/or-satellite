@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using CopernicusOpenCSharp;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -23,6 +24,7 @@ namespace or_satellite.Service
         private readonly HttpClient client = new HttpClient();
         private readonly string username;
         private readonly string password;
+        private DatasetFootprintCheck geoCalculator = new DatasetFootprintCheck();
 
         private static readonly Progress<double> MyProgress = new Progress<double>();
         private static double old = 0;
@@ -41,25 +43,16 @@ namespace or_satellite.Service
             this.password = password;
         }
 
-        public bool CheckIfDirectoryExists(DateTime date)
-        {
-            string directory = $"/app/Copernicus/Extraction/{date:MM-dd-yyyy}";
-
-            if (Directory.Exists(directory))
-                return true;
-
-            return false;
-        }
-
-        public async Task<string> GetId(double longitude, double latitude, DateTime date)
+        public async Task<string> GetId(double latitude, double longitude, DateTime date)
         {
             // logger.LogInformation("Checking directories...");
             CheckBaseDirectories();
+            
             // logger.LogInformation("Searching file...");
             string endOfDay = $"{date:yyyy-MM-dd}T23:59:59.999Z";
             string startOfDay = $"{date:yyyy-MM-dd}T00:00:00.000Z";
 
-            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({longitude}, {latitude})\" ) AND " +
+            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
                                 $"( beginPosition:[{startOfDay} TO {endOfDay}] AND " +
                                 $"endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
                                 "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
@@ -81,8 +74,17 @@ namespace or_satellite.Service
                 // logger.LogInformation("No match found");
                 return $"{finalMessage.totalResults} results";
             }
-                
-            // logger.LogInformation("Match found");
+
+            if (Directory.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyy}/{finalMessage.entry[0].id}"))
+                return "Data already been processed";
+
+            var metaData = finalMessage.entry[0].str[1].Value;
+            Regex pattern = new Regex(@"(?:<gml:coordinates>)(.*.)(?:<)");
+            metaData = pattern.Match(metaData).Groups[1].ToString()/*.Replace(" ", ";\n")*/;
+            metaData = $"{finalMessage.entry[0].id}:{metaData}";
+            Directory.CreateDirectory($"/app/Copernicus/Processed/{date:dd-MM-yyyy}");
+            File.AppendAllText($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt", metaData + "\n");
+
             await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[1].Value);
 
             return finalMessage.entry.Select(s => s.id).ToString();
