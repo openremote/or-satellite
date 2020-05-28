@@ -23,10 +23,10 @@ namespace or_satellite.Controllers
         }
 
         [HttpGet("getid")]
-        public async Task<string> GetId(double longitude, double latitude, DateTime? date = null)
+        public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
         {
             date ??= DateTime.Now;
-            return await copernicus.GetId(longitude, latitude, Convert.ToDateTime(date));
+            return await copernicus.GetId(latitude, longitude, Convert.ToDateTime(date));
         }
 
         /*[HttpGet("process")]
