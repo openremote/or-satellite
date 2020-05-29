@@ -17,6 +17,7 @@ namespace or_satellite.Service
         const string SeaPressureFile = "sea_pressure.txt";
         const string OzoneFile = "total_ozone.txt";
         const double KelvinMinusValue = 272.15;
+        const double CoordScalingFactor = 0.000001;
         private string MinRangeCalculator(string input)
         {
             const double range = 0.5;
@@ -82,30 +83,11 @@ namespace or_satellite.Service
             foreach (string item in FilteredCoordList)
             {
 
-                string newLat = item.Split(',')[0];
-                string newLong = item.Split(',')[1];
+                double newLat = Convert.ToDouble(item.Split(',')[0]) * CoordScalingFactor;
+                double newLong = Convert.ToDouble(item.Split(',')[1]) * CoordScalingFactor;
 
-
-                while (newLat.Replace("-", "").Length < 7)
-                {
-                    newLat += "0";
-                }
-                if (newLat.Length > 7)
-                {
-                    newLat = newLat.Substring(0, 7);
-                }
-                while (newLong.Replace("-", "").Length < 8)
-                {
-                    newLong += "0";
-                }
-                if (newLong.Length > 8)
-                {
-                    newLong = newLong.Substring(0, 8);
-                }
-
-                newLong = newLong.Insert((newLong.Length - 7), ".");
-                newLat = newLat.Insert((newLat.Length - 5), ".");
-                coordinateList.Add(new GeoCoordinate(Convert.ToDouble(newLat), Convert.ToDouble(newLong)));
+                //////////////////////////////////////////////////////////
+                coordinateList.Add(new GeoCoordinate(newLat, newLong));
                 Console.WriteLine($"{newLat},{newLong}");
 
             }
@@ -122,7 +104,7 @@ namespace or_satellite.Service
 
             List<GeoCoordinate> SortedCoordinateListBasedOnDistance = coordinateList.OrderBy(x => x.GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude)))).ToList();
             //Console.WriteLine($"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}".Replace(".", ""));
-            string stringToSearch = $"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}".Replace(".", "");
+            string stringToSearch = $"{SortedCoordinateListBasedOnDistance[0].Latitude / CoordScalingFactor},{SortedCoordinateListBasedOnDistance[0].Longitude / CoordScalingFactor}";
 
             int FoundCoordIndex = listItems.IndexOf($"{stringToSearch}");
             //temperature
