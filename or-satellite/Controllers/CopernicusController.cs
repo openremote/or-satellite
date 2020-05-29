@@ -22,7 +22,7 @@ namespace or_satellite.Controllers
             this.locSearch = locSearch;
         }
 
-        [HttpGet("getid")]
+        [HttpGet("downloadMapData")]
         public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
         {
             date ??= DateTime.Now;
