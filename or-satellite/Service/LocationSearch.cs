@@ -113,16 +113,16 @@ namespace or_satellite.Service
             listItems.AddRange(data.Split('\n'));
 
             List<string> FilteredCoordList =
-                listItems.Where(x => x.StartsWith(minLatRange) || x.StartsWith(maxLatRange)).ToList();
+                listItems.Where(x => x.StartsWith(minLongRange) || x.StartsWith(maxLongRange)).ToList();
 
             FilteredCoordList = FilteredCoordList.Where(x =>
-                x.Split(',')[1].StartsWith(minLongRange) || x.Split(',')[1].StartsWith(maxLongRange)).ToList();
+                x.Split(',')[1].StartsWith(minLatRange) || x.Split(',')[1].StartsWith(maxLatRange)).ToList();
 
             List<GeoCoordinate> coordinateList = new List<GeoCoordinate>();
             foreach (string item in FilteredCoordList)
             {
-                string newLat = item.Split(',')[0];
-                string newLong = item.Split(',')[1];
+                string newLat = item.Split(',')[1];
+                string newLong = item.Split(',')[0];
 
 
                 while (newLat.Replace("-", "").Length < 7)

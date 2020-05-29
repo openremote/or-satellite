@@ -23,6 +23,6 @@ namespace or_satellite
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                }).ConfigureServices(collection => { collection.AddHostedService<TimedRemovalService>(); });
+                })/*.ConfigureServices(collection => { collection.AddHostedService<TimedRemovalService>(); })*/;
     }
 }
