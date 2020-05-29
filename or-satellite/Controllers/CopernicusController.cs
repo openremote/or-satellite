@@ -13,8 +13,8 @@ namespace or_satellite.Controllers
     [Route("[controller]")]
     public class CopernicusController : Controller
     {
-        private CopernicusGetData copernicus;
-        private LocationSearch locSearch;
+        private readonly CopernicusGetData copernicus;
+        private readonly LocationSearch locSearch;
 
         public CopernicusController(CopernicusGetData copernicus, LocationSearch locSearch)
         {
@@ -23,26 +23,17 @@ namespace or_satellite.Controllers
         }
 
         [HttpGet("getid")]
-        public async Task<IEnumerable<string>> GetId(double longitude, double latitude, string? date)
+        public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
         {
-            if (string.IsNullOrEmpty(date))
-            {
-                date = DateTime.Now.ToString("yyyy-MM-dd");
-            }
-
-            if(!copernicus.CheckIfDirectoryExists(Convert.ToDateTime(date)))
-            {
-                return await copernicus.GetId(longitude, latitude, date);
-            }
-
-            return new[] { "this date has already been processed"};
+            date ??= DateTime.Now;
+            return await copernicus.GetId(latitude, longitude, Convert.ToDateTime(date));
         }
 
-        [HttpGet("process")]
+        /*[HttpGet("process")]
         public void Process(DateTime date)
         {
             copernicus.ProcessData(date);
-        }
+        }*/
 
         [HttpGet("getValue")]
         public string GetValues(string longitude, string latitude, string? date)

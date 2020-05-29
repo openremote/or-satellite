@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using CopernicusOpenCSharp;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -13,18 +14,28 @@ using CopernicusOpenCSharp.Extensions;
 using CopernicusOpenCSharp.Models;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.Logging;
 using or_satellite.Models;
 
 namespace or_satellite.Service
 {
     public class CopernicusGetData
     {
-        private HttpClient _client = new HttpClient();
+        private readonly HttpClient client = new HttpClient();
         private readonly string username;
         private readonly string password;
+        private DatasetFootprintCheck geoCalculator = new DatasetFootprintCheck();
 
-        static readonly Progress<double> myProgress = new Progress<double>();
+        private static readonly Progress<double> MyProgress = new Progress<double>();
         private static double old = 0;
+        // private readonly ILogger logger;
+
+        /*public CopernicusGetData(string username, string password, ILogger logger)
+        {
+            this.username = username;
+            this.password = password;-
+            this.logger = logger;
+        }*/
 
         public CopernicusGetData(string username, string password)
         {
@@ -32,34 +43,24 @@ namespace or_satellite.Service
             this.password = password;
         }
 
-        public bool CheckIfDirectoryExists(DateTime date)
+        public async Task<string> GetId(double latitude, double longitude, DateTime date)
         {
-            string directory = $"/app/Copernicus/Extraction/{date.ToString("MM-dd-yyyy")}";
+            // logger.LogInformation("Checking directories...");
+            CheckBaseDirectories();
+            
+            // logger.LogInformation("Searching file...");
+            string endOfDay = $"{date:yyyy-MM-dd}T23:59:59.999Z";
+            string startOfDay = $"{date:yyyy-MM-dd}T00:00:00.000Z";
 
-            if (Directory.Exists(directory))
-                return true;
-
-            return false;
-        }
-
-        public async Task<IEnumerable<string>> GetId(double longitude, double latitude, string date)
-        {
-            Console.WriteLine("Check directories");
-            CheckDirectories();
-            Console.WriteLine("Searching file...");
-            string endOfDay = $"{date}T23:59:59.999Z";
-            string startOfDay = $"{date}T00:00:00.000Z";
-
-            // ( footprint:\"Intersects({longitude}, {latitude})\" )
-
-            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects(POLYGON((5.4300540144591345 51.408545506027025,5.532676234946037 51.408545506027025,5.532676234946037 51.469733336498734,5.4300540144591345 51.469733336498734,5.4300540144591345 51.408545506027025)))\" ) AND " +
-                                $"( beginPosition:[{startOfDay} TO {endOfDay}] AND endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
-                                $"( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
-                                $"&sortedby=ingestiondate&order=desc";
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",Convert.ToBase64String(
+            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
+                                $"( beginPosition:[{startOfDay} TO {endOfDay}] AND " +
+                                $"endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
+                                "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
+                                "&sortedby=ingestiondate&order=desc";
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",Convert.ToBase64String(
                 System.Text.Encoding.ASCII.GetBytes(
                     $"{username}:{password}")));
-            var result = await _client.GetAsync(requestUri);
+            var result = await client.GetAsync(requestUri);
 
             result.EnsureSuccessStatusCode();
             var response = await result.Content.ReadAsStringAsync();
@@ -68,24 +69,31 @@ namespace or_satellite.Service
             StringReader reader = new StringReader(response);
             feed finalMessage = (feed) serializer.Deserialize(reader);
 
-            //TODO: HTTP CLIENT
-            //TODO: request met url
             if (finalMessage.entry == null)
             {
-                Console.WriteLine("No matches found");
-                return new[] { finalMessage.totalResults + " results" };
+                // logger.LogInformation("No match found");
+                return $"{finalMessage.totalResults} results";
             }
-                
-            Console.WriteLine("File has been found");
+
+            if (Directory.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyy}/{finalMessage.entry[0].id}"))
+                return "Data already been processed";
+
+            var metaData = finalMessage.entry[0].str[1].Value;
+            Regex pattern = new Regex(@"(?:<gml:coordinates>)(.*.)(?:<)");
+            metaData = pattern.Match(metaData).Groups[1].ToString()/*.Replace(" ", ";\n")*/;
+            metaData = $"{finalMessage.entry[0].id}:{metaData}";
+            Directory.CreateDirectory($"/app/Copernicus/Processed/{date:dd-MM-yyyy}");
+            File.AppendAllText($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt", metaData + "\n");
+
             await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[1].Value);
 
-            return finalMessage.entry.Select(s => s.id);
+            return finalMessage.entry.Select(s => s.id).ToString();
         }
 
         private async Task DownloadMapData(string id, string title, DateTime ingestionDate)
         {
             Console.WriteLine("Downloading file");
-            myProgress.ProgressChanged += (sender, value) =>
+            MyProgress.ProgressChanged += (sender, value) =>
             {
                 value = Math.Round(value);
 
@@ -97,21 +105,21 @@ namespace or_satellite.Service
             };
             CopernicusService service = new CopernicusService(username, password);
 
-            await service.DownloadMetaDataAsync("/app/Copernicus/Downloads", myProgress, id: id);
+            await service.DownloadMetaDataAsync("/app/Copernicus/Downloads", MyProgress, id: id);
             Console.WriteLine("File downloaded");
-            ExtractData(title, ingestionDate);
+            ExtractData(id, title, ingestionDate);
         }
 
-        private void ExtractData(string title, DateTime startDate)
+        private void ExtractData(string id, string title, DateTime startDate)
         {
             Console.WriteLine("Extracting file");
             string startPath = "/app/Copernicus/Downloads";
             string zipPath = $"{title}.zip";
             string extractPath = "/app/Copernicus/Extraction";
             string date = startDate.ToString("dd-MM-yyyy");
-            if(Directory.Exists($"{extractPath}/{date}"))
-                Directory.Delete($"{extractPath}/{date}", true);
-            Directory.CreateDirectory($"{extractPath}/{date}");
+            if(Directory.Exists($"{extractPath}/{date}/{id.Replace("\'", "")}"))
+                Directory.Delete($"{extractPath}/{date}/{id.Replace("\'", "")}", true);
+            Directory.CreateDirectory($"{extractPath}/{date}/{id.Replace("\'", "")}");
 
             using (ZipArchive archive = ZipFile.OpenRead($"{startPath}/{zipPath}"))
             {
@@ -122,38 +130,39 @@ namespace or_satellite.Service
 
                 foreach (ZipArchiveEntry entry in result)
                 {
-                    entry.ExtractToFile(Path.Combine($"{extractPath}/{date}", entry.Name));
+                    entry.ExtractToFile(Path.Combine($"{extractPath}/{date}/{id.Replace("\'", "")}", entry.Name));
                 }
             }
             Console.WriteLine("File extracted");
-            ProcessData(startDate);
+            ProcessData(id, startDate);
         }
 
-        public void ProcessData(DateTime startDate)
+        public void ProcessData(string id, DateTime startDate)
         {
-            string startPath = "/app/Copernicus/Processed";
+            
             string date = startDate.ToString("dd-MM-yyyy");
-            string extractedFilesPath = $"/app/Copernicus/Extraction/{date}";
+            string startPath = $"/app/Copernicus/Processed/{date}/{id.Replace("\'", "")}";
+            string extractedFilesPath = $"/app/Copernicus/Extraction/{date}/{id.Replace("\'", "")}";
             string mergeAtmosphericAndCoord = $"ncks -A {extractedFilesPath}/tie_meteo.nc {extractedFilesPath}/tie_geo_coordinates.nc";
             string dimensionSplitting =
                 $"ncks -d tie_pressure_levels,0,0 {extractedFilesPath}/tie_geo_coordinates.nc {extractedFilesPath}/filtered_merged_file.nc";
-            string extractLatitude = $"ncks -s '%i\n' -F -H -C -v latitude {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/latitudes.txt";
+            string extractLatitude = $"ncks -s '%i\n' -F -H -C -v latitude {extractedFilesPath}/filtered_merged_file.nc > {startPath}/latitudes.txt";
             string extractLongitude =
-                $"ncks -s '%i\n' -F -H -C -v longitude {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/longitudes.txt";
-            string mergeCoordinates = $"paste -d , {startPath}/{date}/longitudes.txt {startPath}/{date}/latitudes.txt > {startPath}/{date}/coordfile.txt";
+                $"ncks -s '%i\n' -F -H -C -v longitude {extractedFilesPath}/filtered_merged_file.nc > {startPath}/longitudes.txt";
+            string mergeCoordinates = $"paste -d , {startPath}/longitudes.txt {startPath}/latitudes.txt > {startPath}/coordfile.txt";
             string temperature =
-                $"ncks -s '%.3f\n' -F -H -C -v atmospheric_temperature_profile {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/temperature.txt";
+                $"ncks -s '%.3f\n' -F -H -C -v atmospheric_temperature_profile {extractedFilesPath}/filtered_merged_file.nc > {startPath}/temperature.txt";
             string humidity =
-                $"ncks -s '%f\n' -F -H -C -v humidity {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/humidity.txt";
+                $"ncks -s '%f\n' -F -H -C -v humidity {extractedFilesPath}/filtered_merged_file.nc > {startPath}/humidity.txt";
             string seaPressure =
-                $"ncks -s '%f\n' -F -H -C -v sea_level_pressure {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/sea_pressure.txt";
+                $"ncks -s '%f\n' -F -H -C -v sea_level_pressure {extractedFilesPath}/filtered_merged_file.nc > {startPath}/sea_pressure.txt";
             string totalOzone =
-                $"ncks -s '%f\n' -F -H -C -v total_ozone {extractedFilesPath}/filtered_merged_file.nc > {startPath}/{date}/total_ozone.txt";
+                $"ncks -s '%f\n' -F -H -C -v total_ozone {extractedFilesPath}/filtered_merged_file.nc > {startPath}/total_ozone.txt";
 
             Console.WriteLine("Processing files");
-            if (Directory.Exists($"{startDate}/{date}"))
-                Directory.Delete($"{startDate}/{date}",true);
-            Directory.CreateDirectory($"{startPath}/{date}");
+            if (Directory.Exists($"{startPath}"))
+                Directory.Delete($"{startPath}",true);
+            Directory.CreateDirectory($"{startPath}");
 
             Console.WriteLine(mergeAtmosphericAndCoord);
             ExecuteCommand(mergeAtmosphericAndCoord);
@@ -228,16 +237,35 @@ namespace or_satellite.Service
             return result;
         }
 
-        private void CheckDirectories()
+        private void CheckBaseDirectories()
         {
+            // logger.LogInformation("Checking 'Copernicus' folder");
             if (!Directory.Exists("/app/Copernicus"))
+            {
+                // logger.LogInformation("Directory not found. Creating 'Copernicus' folder'");
                 Directory.CreateDirectory("/app/Copernicus");
+            }
+
+            // logger.LogInformation("Checking 'Downloads' folder");
             if (!Directory.Exists("/app/Copernicus/Downloads"))
+            {
+                // logger.LogInformation("Directory not found. Creating 'Downloads' folder'");
                 Directory.CreateDirectory("/app/Copernicus/Downloads");
+            }
+
+            // logger.LogInformation("Checking 'Extraction' folder");
             if (!Directory.Exists("/app/Copernicus/Extraction"))
+            {
+                // logger.LogInformation("Directory not found. Creating 'Extraction' folder'");
                 Directory.CreateDirectory("/app/Copernicus/Extraction");
+            }
+
+            // logger.LogInformation("Checking 'Processed' folder");
             if (!Directory.Exists("/app/Copernicus/Processed"))
+            {
+                // logger.LogInformation("Directory not found. Creating 'Processed' folder'");
                 Directory.CreateDirectory("/app/Copernicus/Processed");
+            }
         }
     }
 }

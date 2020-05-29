@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using GeoCoordinate = GeoCoordinatePortable.GeoCoordinate;
 
 namespace or_satellite.Service
 {
@@ -18,6 +19,8 @@ namespace or_satellite.Service
         const string OzoneFile = "total_ozone.txt";
         const double KelvinMinusValue = 272.15;
         const double CoordScalingFactor = 0.000001;
+        DatasetFootprintCheck geoCalculate = new DatasetFootprintCheck();
+
         private string MinRangeCalculator(string input)
         {
             const double range = 0.5;
@@ -25,6 +28,7 @@ namespace or_satellite.Service
             double _minInput = _input - range;
             return _minInput.ToString().Split('.')[0];
         }
+
         private string MaxRangeCalculator(string input)
         {
             double range = 0.5;
@@ -35,14 +39,46 @@ namespace or_satellite.Service
 
         public string Search(string latitude, string longitude, string date = "")
         {
-            System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            if (!File.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
+                return "Data not available";
+
+            string id = null;
+            foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
+            {
+                List<string> coordList = new List<string>();
+                List<Models.GeoCoordinate> vertices = new List<Models.GeoCoordinate>();
+                coordList.AddRange(line.Split(':')[1].Split(' '));
+
+                foreach (var coordinate in coordList)
+                {
+                    double _latitude = Convert.ToDouble(coordinate.Split(',')[0]);
+                    double _longitude = Convert.ToDouble(coordinate.Split(',')[1]);
+
+                    vertices.Add(new Models.GeoCoordinate(_latitude, _longitude));
+                }
+
+                Models.GeoCoordinate geoCoordinate =
+                    new Models.GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
+                if (geoCalculate.Contains(geoCoordinate, vertices))
+                {
+                    id = line.Split(":")[0];
+                    break;
+                }
+            }
+
+            if (id == null)
+                return "Data not available";
+
+
+            System.Globalization.CultureInfo customCulture =
+                (System.Globalization.CultureInfo) System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
             customCulture.NumberFormat.NumberDecimalSeparator = ".";
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
             Stopwatch stopwatch = new Stopwatch();
             List<string> listItems = new List<string>();
-            folderPath = "/app/Copernicus/Processed/" + date + "/";
+            folderPath = $"/app/Copernicus/Processed/{date}/{id}/";
 
 
             decimal lat = 0;
@@ -54,13 +90,14 @@ namespace or_satellite.Service
 
             if (decimal.TryParse(latitude, out lat) && decimal.TryParse(longitude, out Long))
             {
-
             }
 
-            #region CheckFilesExist 
-            if (File.Exists($"{folderPath}{CoordFile}") && File.Exists($"{folderPath}{TemperatureFile}") && File.Exists($"{folderPath}{HumidityFile}") && File.Exists($"{folderPath}{SeaPressureFile}") && File.Exists($"{folderPath}{OzoneFile}"))
-            {
+            #region CheckFilesExist
 
+            if (File.Exists($"{folderPath}{CoordFile}") && File.Exists($"{folderPath}{TemperatureFile}") &&
+                File.Exists($"{folderPath}{HumidityFile}") && File.Exists($"{folderPath}{SeaPressureFile}") &&
+                File.Exists($"{folderPath}{OzoneFile}"))
+            {
             }
             else
             {
@@ -69,15 +106,18 @@ namespace or_satellite.Service
                 // return locErr;
                 return "Invalid folder or missing files.";
             }
+
             #endregion
 
             stopwatch.Start();
             string data = File.ReadAllText($"{folderPath}{CoordFile}");
             listItems.AddRange(data.Split('\n'));
 
-            List<string> FilteredCoordList = listItems.Where(x => x.StartsWith(minLatRange) || x.StartsWith(maxLatRange)).ToList();
+            List<string> FilteredCoordList =
+                listItems.Where(x => x.StartsWith(minLongRange) || x.StartsWith(maxLongRange)).ToList();
 
-            FilteredCoordList = FilteredCoordList.Where(x => x.Split(',')[1].StartsWith(minLongRange) || x.Split(',')[1].StartsWith(maxLongRange)).ToList();
+            FilteredCoordList = FilteredCoordList.Where(x =>
+                x.Split(',')[1].StartsWith(minLatRange) || x.Split(',')[1].StartsWith(maxLatRange)).ToList();
 
             List<GeoCoordinate> coordinateList = new List<GeoCoordinate>();
             foreach (string item in FilteredCoordList)
@@ -102,39 +142,53 @@ namespace or_satellite.Service
                 return errorObject;
             }
 
-            List<GeoCoordinate> SortedCoordinateListBasedOnDistance = coordinateList.OrderBy(x => x.GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude)))).ToList();
+            List<GeoCoordinate> SortedCoordinateListBasedOnDistance = coordinateList.OrderBy(x =>
+                x.GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude)))).ToList();
             //Console.WriteLine($"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}".Replace(".", ""));
             string stringToSearch = $"{SortedCoordinateListBasedOnDistance[0].Latitude / CoordScalingFactor},{SortedCoordinateListBasedOnDistance[0].Longitude / CoordScalingFactor}";
 
             int FoundCoordIndex = listItems.IndexOf($"{stringToSearch}");
             //temperature
             double FoundTemperature;
-            if (double.TryParse(File.ReadLines($"{folderPath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(), out FoundTemperature))
+            if (double.TryParse(File.ReadLines($"{folderPath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(),
+                out FoundTemperature))
             {
                 FoundTemperature = FoundTemperature - KelvinMinusValue;
             }
+
             //Humidity
             double FoundHumidity;
-            if (double.TryParse(File.ReadLines($"{folderPath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(), out FoundHumidity))
+            if (double.TryParse(File.ReadLines($"{folderPath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(),
+                out FoundHumidity))
             {
                 FoundHumidity = Math.Round(FoundHumidity, 1);
             }
+
             //sea level pressure
             double foundSeaLevelPressure;
-            if (double.TryParse(File.ReadLines($"{folderPath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(), out foundSeaLevelPressure))
+            if (double.TryParse(File.ReadLines($"{folderPath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(),
+                out foundSeaLevelPressure))
             {
                 foundSeaLevelPressure = Math.Round(foundSeaLevelPressure, 1);
             }
+
             //Total Ozone
             double foundOzone;
-            if (double.TryParse(File.ReadLines($"{folderPath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(), out foundOzone))
+            if (double.TryParse(File.ReadLines($"{folderPath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(),
+                out foundOzone))
             {
-
             }
 
             stopwatch.Stop();
 
-            LocationObject loc = new LocationObject(Math.Round((SortedCoordinateListBasedOnDistance[0].GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude))) / 1000), 2), $"{SortedCoordinateListBasedOnDistance[0].Latitude },{ SortedCoordinateListBasedOnDistance[0].Longitude}", Math.Round(FoundTemperature, 1), FoundHumidity, foundSeaLevelPressure, foundOzone, true, stopwatch.Elapsed);
+            LocationObject loc = new LocationObject(
+                Math.Round(
+                    (SortedCoordinateListBasedOnDistance[0]
+                         .GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude))) /
+                     1000), 2),
+                $"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}",
+                Math.Round(FoundTemperature, 1), FoundHumidity, foundSeaLevelPressure, foundOzone, true,
+                stopwatch.Elapsed);
             string jsonResult = JsonConvert.SerializeObject(loc);
             // return loc;
             return jsonResult;
