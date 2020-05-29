@@ -123,8 +123,8 @@ namespace or_satellite.Service
             foreach (string item in FilteredCoordList)
             {
 
-                double newLat = Convert.ToDouble(item.Split(',')[0]) * CoordScalingFactor;
-                double newLong = Convert.ToDouble(item.Split(',')[1]) * CoordScalingFactor;
+                double newLat = Convert.ToDouble(item.Split(',')[1]) * CoordScalingFactor;
+                double newLong = Convert.ToDouble(item.Split(',')[0]) * CoordScalingFactor;
 
                 //////////////////////////////////////////////////////////
                 coordinateList.Add(new GeoCoordinate(newLat, newLong));
