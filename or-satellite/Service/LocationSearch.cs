@@ -38,10 +38,10 @@ namespace or_satellite.Service
             return _maxInput.ToString().Split('.')[0];
         }
 
-        public SearchResultModel Search(string latitude, string longitude, string date = "")
+        public SearchResultModel Search(string latitude, string longitude, DateTime date)
         {
             if (!File.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.dataNotAvialable };//
 
             string id = null;
             foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
@@ -68,7 +68,7 @@ namespace or_satellite.Service
             }
 
             if (id == null)
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.dataNotAvialable };//
 
 
             System.Globalization.CultureInfo customCulture =
@@ -77,7 +77,7 @@ namespace or_satellite.Service
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
-            folderPath = $"/app/Copernicus/Processed/{date}/{id}/";
+            folderPath = $"/app/Copernicus/Processed/{date:dd-MM-yyyy}/{id}/";
 
 
             decimal lat = 0;
@@ -100,9 +100,9 @@ namespace or_satellite.Service
                 Console.WriteLine("Invalid folder or missing files.");
                 //LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
                 // return locErr;
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.missingFiles }; 
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.missingFiles }; 
             }
-            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, succes = true, searchResult = SearchResultEnum.success };
+            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), succes = true, searchResult = SearchResultEnum.success };
             #endregion
 
         }

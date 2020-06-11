@@ -36,16 +36,18 @@ namespace or_satellite.Controllers
         }*/
 
         [HttpGet("getValue")]
-        public async Task<string> GetValues(string longitude, string latitude, string? date)
+        public async Task<string> GetValues(string longitude, string latitude, DateTime? date = null)
         {
             string result = "the request could not be handled";
 
-            if (string.IsNullOrEmpty(date))
+            if (!date.HasValue)
             {
-                date = DateTime.Now.ToString("yyyy-MM-dd");
+                date = DateTime.Now;
             }
+                
+            
 
-            SearchResultModel output = locSearch.Search(latitude, longitude, date);
+            SearchResultModel output = locSearch.Search(latitude, longitude, Convert.ToDateTime(date));
 
             switch (output.searchResult)
             {
