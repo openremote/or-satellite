@@ -36,16 +36,32 @@ namespace or_satellite.Controllers
         }*/
 
         [HttpGet("getValue")]
-        public string GetValues(string longitude, string latitude, string? date)
+        public async Task<string> GetValues(string longitude, string latitude, string? date)
         {
+            string result = "the request could not be handled";
+
             if (string.IsNullOrEmpty(date))
             {
                 date = DateTime.Now.ToString("yyyy-MM-dd");
             }
 
-            string output = locSearch.Search(latitude, longitude, date);
+            SearchResultModel output = locSearch.Search(latitude, longitude, date);
 
-            return output;
+            switch (output.searchResult)
+            {
+                case SearchResultEnum.dataNotAvialable:
+                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    result = locSearch.execute(output);
+                    break;
+                case SearchResultEnum.missingFiles:
+                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    result = locSearch.execute(output);
+                    break;
+                case SearchResultEnum.success:
+                    result = locSearch.execute(output);
+                    break;
+            }
+            return result;
         }
     }
 }

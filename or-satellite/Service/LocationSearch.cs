@@ -1,5 +1,6 @@
 ﻿using GeoCoordinatePortable;
 using Newtonsoft.Json;
+using or_satellite.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -37,10 +38,10 @@ namespace or_satellite.Service
             return _maxInput.ToString().Split('.')[0];
         }
 
-        public string Search(string latitude, string longitude, string date = "")
+        public SearchResultModel Search(string latitude, string longitude, string date = "")
         {
             if (!File.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
-                return "Data not available";
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
 
             string id = null;
             foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
@@ -67,7 +68,7 @@ namespace or_satellite.Service
             }
 
             if (id == null)
-                return "Data not available";
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
 
 
             System.Globalization.CultureInfo customCulture =
@@ -76,17 +77,12 @@ namespace or_satellite.Service
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
 
-            Stopwatch stopwatch = new Stopwatch();
-            List<string> listItems = new List<string>();
             folderPath = $"/app/Copernicus/Processed/{date}/{id}/";
 
 
             decimal lat = 0;
             decimal Long = 0;
-            string maxLatRange = MaxRangeCalculator(latitude);
-            string maxLongRange = MaxRangeCalculator(longitude);
-            string minLatRange = MinRangeCalculator(latitude);
-            string minLongRange = MinRangeCalculator(longitude);
+
 
             if (decimal.TryParse(latitude, out lat) && decimal.TryParse(longitude, out Long))
             {
@@ -102,13 +98,23 @@ namespace or_satellite.Service
             else
             {
                 Console.WriteLine("Invalid folder or missing files.");
-                LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
+                //LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
                 // return locErr;
-                return "Invalid folder or missing files.";
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.missingFiles }; 
             }
-
+            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, succes = true, searchResult = SearchResultEnum.success };
             #endregion
 
+        }
+        public string execute(SearchResultModel resultModel)
+        {
+            string maxLatRange = MaxRangeCalculator(resultModel.latitude);
+            string maxLongRange = MaxRangeCalculator(resultModel.longitude);
+            string minLatRange = MinRangeCalculator(resultModel.latitude);
+            string minLongRange = MinRangeCalculator(resultModel.longitude);
+
+            List<string> listItems = new List<string>();
+            Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             string data = File.ReadAllText($"{folderPath}{CoordFile}");
             listItems.AddRange(data.Split('\n'));
@@ -143,7 +149,7 @@ namespace or_satellite.Service
             }
 
             List<GeoCoordinate> SortedCoordinateListBasedOnDistance = coordinateList.OrderBy(x =>
-                x.GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude)))).ToList();
+                x.GetDistanceTo(new GeoCoordinate(Convert.ToDouble(resultModel.latitude), Convert.ToDouble(resultModel.longitude)))).ToList();
             //Console.WriteLine($"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}".Replace(".", ""));
             string stringToSearch = $"{SortedCoordinateListBasedOnDistance[0].Latitude / CoordScalingFactor},{SortedCoordinateListBasedOnDistance[0].Longitude / CoordScalingFactor}";
 
@@ -184,7 +190,7 @@ namespace or_satellite.Service
             LocationObject loc = new LocationObject(
                 Math.Round(
                     (SortedCoordinateListBasedOnDistance[0]
-                         .GetDistanceTo(new GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude))) /
+                         .GetDistanceTo(new GeoCoordinate(Convert.ToDouble(resultModel.latitude), Convert.ToDouble(resultModel.longitude))) /
                      1000), 2),
                 $"{SortedCoordinateListBasedOnDistance[0].Latitude},{SortedCoordinateListBasedOnDistance[0].Longitude}",
                 Math.Round(FoundTemperature, 1), FoundHumidity, foundSeaLevelPressure, foundOzone, true,
