@@ -102,7 +102,7 @@ namespace or_satellite.Service
                 // return locErr;
                 return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.missingFiles }; 
             }
-            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), succes = true, searchResult = SearchResultEnum.success };
+            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), folderpath = folderPath, succes = true, searchResult = SearchResultEnum.success };
             #endregion
 
         }
@@ -116,7 +116,7 @@ namespace or_satellite.Service
             List<string> listItems = new List<string>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            string data = File.ReadAllText($"{folderPath}{CoordFile}");
+            string data = File.ReadAllText($"{resultModel.folderpath}{CoordFile}");
             listItems.AddRange(data.Split('\n'));
 
             List<string> FilteredCoordList =
@@ -156,7 +156,7 @@ namespace or_satellite.Service
             int FoundCoordIndex = listItems.IndexOf($"{stringToSearch}");
             //temperature
             double FoundTemperature;
-            if (double.TryParse(File.ReadLines($"{folderPath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out FoundTemperature))
             {
                 FoundTemperature = FoundTemperature - KelvinMinusValue;
@@ -164,7 +164,7 @@ namespace or_satellite.Service
 
             //Humidity
             double FoundHumidity;
-            if (double.TryParse(File.ReadLines($"{folderPath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out FoundHumidity))
             {
                 FoundHumidity = Math.Round(FoundHumidity, 1);
@@ -172,7 +172,7 @@ namespace or_satellite.Service
 
             //sea level pressure
             double foundSeaLevelPressure;
-            if (double.TryParse(File.ReadLines($"{folderPath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out foundSeaLevelPressure))
             {
                 foundSeaLevelPressure = Math.Round(foundSeaLevelPressure, 1);
@@ -180,7 +180,7 @@ namespace or_satellite.Service
 
             //Total Ozone
             double foundOzone;
-            if (double.TryParse(File.ReadLines($"{folderPath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out foundOzone))
             {
             }

@@ -11,6 +11,7 @@ namespace or_satellite.Models
         public string latitude;
         public string longitude;
         public string date;
-        public SearchResultEnum searchResult; 
+        public SearchResultEnum searchResult;
+        public string folderpath;
     }
 }
