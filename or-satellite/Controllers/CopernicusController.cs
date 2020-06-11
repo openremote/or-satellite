@@ -35,7 +35,6 @@ namespace or_satellite.Controllers
             copernicus.ProcessData(date);
         }*/
 
-        [HttpPost("getValue")]
         [HttpGet("getValue")]
         public async Task<string> GetValues(string longitude, string latitude, string? date)
         {
