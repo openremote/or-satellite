@@ -10,5 +10,6 @@ namespace or_satellite.Models
         dataNotAvialable,
         missingFiles,
         success,
+        noDatasetFound,
     }
 }

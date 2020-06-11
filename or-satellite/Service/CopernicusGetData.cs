@@ -43,7 +43,7 @@ namespace or_satellite.Service
             this.password = password;
         }
 
-        public async Task<string> GetId(double latitude, double longitude, DateTime date)
+        public async Task<SearchResultModel> GetId(double latitude, double longitude, DateTime date)
         {
             // logger.LogInformation("Checking directories...");
             CheckBaseDirectories();
@@ -71,12 +71,11 @@ namespace or_satellite.Service
 
             if (finalMessage.entry == null)
             {
-                // logger.LogInformation("No match found");
-                return $"{finalMessage.totalResults} results";
+                return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.noDatasetFound};
             }
 
-            if (Directory.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyy}/{finalMessage.entry[0].id}"))
-                return "Data already been processed";
+            /*if (Directory.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyy}/{finalMessage.entry[0].id}"))
+                return new SearchResultModel { searchResult = SearchResultEnum.dataAlreadyProcessed };*/
 
             var metaData = finalMessage.entry[0].str[1].Value;
             Regex pattern = new Regex(@"(?:<gml:coordinates>)(.*.)(?:<)");
@@ -87,7 +86,7 @@ namespace or_satellite.Service
 
             await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[1].Value);
 
-            return finalMessage.entry.Select(s => s.id).ToString();
+            return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.success };
         }
 
         private async Task DownloadMapData(string id, string title, DateTime ingestionDate)

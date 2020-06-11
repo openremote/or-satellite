@@ -41,35 +41,13 @@ namespace or_satellite.Service
         public SearchResultModel Search(string latitude, string longitude, DateTime date)
         {
             if (!File.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.dataNotAvialable };//
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
 
-            string id = null;
-            foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
-            {
-                List<string> coordList = new List<string>();
-                List<Models.GeoCoordinate> vertices = new List<Models.GeoCoordinate>();
-                coordList.AddRange(line.Split(':')[1].Split(' '));
-
-                foreach (var coordinate in coordList)
-                {
-                    double _latitude = Convert.ToDouble(coordinate.Split(',')[0]);
-                    double _longitude = Convert.ToDouble(coordinate.Split(',')[1]);
-
-                    vertices.Add(new Models.GeoCoordinate(_latitude, _longitude));
-                }
-
-                Models.GeoCoordinate geoCoordinate =
-                    new Models.GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
-                if (geoCalculate.Contains(geoCoordinate, vertices))
-                {
-                    id = line.Split(":")[0];
-                    break;
-                }
-            }
+            var id = FindId(latitude, longitude, date);
 
             if (id == null)
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.dataNotAvialable };//
-
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
+                
 
             System.Globalization.CultureInfo customCulture =
                 (System.Globalization.CultureInfo) System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
@@ -100,12 +78,42 @@ namespace or_satellite.Service
                 Console.WriteLine("Invalid folder or missing files.");
                 //LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
                 // return locErr;
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), searchResult = SearchResultEnum.missingFiles }; 
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.missingFiles }; 
             }
-            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date.ToString("dd-MM-yyyy"), folderpath = folderPath, succes = true, searchResult = SearchResultEnum.success };
+            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, succes = true, searchResult = SearchResultEnum.success, id = id};
             #endregion
 
         }
+
+        private string FindId(string latitude, string longitude, DateTime date)
+        {
+            string id = null;
+            foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
+            {
+                List<string> coordList = new List<string>();
+                List<Models.GeoCoordinate> vertices = new List<Models.GeoCoordinate>();
+                coordList.AddRange(line.Split(':')[1].Split(' '));
+
+                foreach (var coordinate in coordList)
+                {
+                    double _latitude = Convert.ToDouble(coordinate.Split(',')[0]);
+                    double _longitude = Convert.ToDouble(coordinate.Split(',')[1]);
+
+                    vertices.Add(new Models.GeoCoordinate(_latitude, _longitude));
+                }
+
+                Models.GeoCoordinate geoCoordinate =
+                    new Models.GeoCoordinate(Convert.ToDouble(latitude), Convert.ToDouble(longitude));
+                if (geoCalculate.Contains(geoCoordinate, vertices))
+                {
+                    id = line.Split(":")[0];
+                    break;
+                }
+            }
+
+            return id;
+        }
+
         public string execute(SearchResultModel resultModel)
         {
             string maxLatRange = MaxRangeCalculator(resultModel.latitude);
@@ -113,10 +121,14 @@ namespace or_satellite.Service
             string minLatRange = MinRangeCalculator(resultModel.latitude);
             string minLongRange = MinRangeCalculator(resultModel.longitude);
 
+            var id = FindId(resultModel.latitude, resultModel.longitude, resultModel.date);
+
+            folderPath = $"/app/Copernicus/Processed/{resultModel.date:dd-MM-yyyy}/{id}/";
+
             List<string> listItems = new List<string>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            string data = File.ReadAllText($"{resultModel.folderpath}{CoordFile}");
+            string data = File.ReadAllText($"{folderPath}{CoordFile}");
             listItems.AddRange(data.Split('\n'));
 
             List<string> FilteredCoordList =
@@ -156,7 +168,7 @@ namespace or_satellite.Service
             int FoundCoordIndex = listItems.IndexOf($"{stringToSearch}");
             //temperature
             double FoundTemperature;
-            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{folderPath}{TemperatureFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out FoundTemperature))
             {
                 FoundTemperature = FoundTemperature - KelvinMinusValue;
@@ -164,7 +176,7 @@ namespace or_satellite.Service
 
             //Humidity
             double FoundHumidity;
-            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{folderPath}{HumidityFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out FoundHumidity))
             {
                 FoundHumidity = Math.Round(FoundHumidity, 1);
@@ -172,7 +184,7 @@ namespace or_satellite.Service
 
             //sea level pressure
             double foundSeaLevelPressure;
-            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{folderPath}{SeaPressureFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out foundSeaLevelPressure))
             {
                 foundSeaLevelPressure = Math.Round(foundSeaLevelPressure, 1);
@@ -180,7 +192,7 @@ namespace or_satellite.Service
 
             //Total Ozone
             double foundOzone;
-            if (double.TryParse(File.ReadLines($"{resultModel.folderpath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(),
+            if (double.TryParse(File.ReadLines($"{folderPath}{OzoneFile}").Skip(FoundCoordIndex).Take(1).First(),
                 out foundOzone))
             {
             }

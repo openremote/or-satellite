@@ -22,12 +22,12 @@ namespace or_satellite.Controllers
             this.locSearch = locSearch;
         }
 
-        [HttpGet("downloadMapData")]
+        /*[HttpGet("downloadMapData")]
         public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
         {
             date ??= DateTime.Now;
             return await copernicus.GetId(latitude, longitude, Convert.ToDateTime(date));
-        }
+        }*/
 
         /*[HttpGet("process")]
         public void Process(DateTime date)
@@ -52,11 +52,21 @@ namespace or_satellite.Controllers
             switch (output.searchResult)
             {
                 case SearchResultEnum.dataNotAvialable:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    if (output.searchResult == SearchResultEnum.noDatasetFound)
+                    {
+                        result = "No dataset available!";
+                        break;
+                    }
                     result = locSearch.execute(output);
                     break;
                 case SearchResultEnum.missingFiles:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    if (output.searchResult == SearchResultEnum.noDatasetFound)
+                    {
+                        result = "No dataset available!";
+                        break;
+                    }
                     result = locSearch.execute(output);
                     break;
                 case SearchResultEnum.success:
