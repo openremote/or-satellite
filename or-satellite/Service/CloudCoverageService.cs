@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using or_satellite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +30,11 @@ namespace or_satellite.Service
         public async Task<JObject> makeRequest()
         {
             HttpClient client = new HttpClient();
-            var result = await client.GetAsync($"http://history.openweathermap.org/data/2.5/history/city?lat={latitude}&lon={longitude}&type=hour&start={startOfDay}&end={endOfDay}&appid={apiKey}");
+            var response = await client.GetAsync($"http://history.openweathermap.org/data/2.5/history/city?lat={latitude}&lon={longitude}&type=hour&start={startOfDay}&end={endOfDay}&appid={apiKey}");
+            string stringresult = await response.Content.ReadAsStringAsync();
+            OpenWeatherMapModel.Clouds OWMM = new OpenWeatherMapModel.Clouds();
+            OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel.Clouds>(stringresult);
+            int result = OWMM.all;
             return JObject.Parse(result.ToString());
         }
     }
