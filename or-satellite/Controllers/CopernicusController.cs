@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using or_satellite.Models;
 using System;
 using System.Xml;
+using Newtonsoft.Json.Linq;
 
 namespace or_satellite.Controllers
 {
@@ -36,34 +37,58 @@ namespace or_satellite.Controllers
         }*/
 
         [HttpGet("getValue")]
-        public async Task<string> GetValues(string longitude, string latitude, DateTime? date = null)
+        public async Task<string> GetValues(string longitude, string latitude, string date = null)
         {
-            string result = "the request could not be handled";
+            DateTime DateTimeDate;
+            JObject result = JObject.Parse(@"{ 'Error': 'The request could not be handled.' }");
 
-            if (!date.HasValue)
+
+            if (!string.IsNullOrEmpty(date))
             {
-                date = DateTime.Now;
+                DateTimeDate = DateTime.Now;
             }
-                
-            
+            else
+            {
+                DateTimeDate = Convert.ToDateTime(date);
+            }
 
-            SearchResultModel output = locSearch.Search(latitude, longitude, Convert.ToDateTime(date));
+            SearchResultModel output = locSearch.Search(latitude, longitude, DateTimeDate);
 
             switch (output.searchResult)
             {
                 case SearchResultEnum.dataNotAvialable:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
-                    result = locSearch.execute(output);
+                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
                 case SearchResultEnum.missingFiles:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
-                    result = locSearch.execute(output);
+                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
                 case SearchResultEnum.success:
-                    result = locSearch.execute(output);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
             }
-            return result;
+
+            if (result.ContainsKey("Error"))
+            {
+                return result.ToString();
+            }
+            else
+            {
+                JObject cloudCoverage = new JObject();
+                CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude);
+                try
+                {
+                    cloudCoverage = await ccs.makeRequest();
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("OpenWeatherMap could not be reached :(");
+                }
+                cloudCoverage = await ccs.makeRequest();
+                result.Merge(cloudCoverage);
+                return result.ToString();
+            }
         }
     }
 }
