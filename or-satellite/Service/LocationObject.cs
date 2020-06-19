@@ -4,7 +4,7 @@ namespace or_satellite.Service
 {
     public class LocationObject
     {
-        public double KMDistance;
+        public double kmDistance;
         public string location;
         public double temperature;
         public double humidity;
@@ -14,7 +14,7 @@ namespace or_satellite.Service
         public TimeSpan timeTaken;
         public LocationObject(double _distance, string _location, double _temperature, double _humidity, double _airPressure, double _ozone, bool _success, TimeSpan _timeTaken)
         {
-            KMDistance = _distance;
+            kmDistance = _distance;
             location = _location;
             temperature = _temperature;
             humidity = _humidity;

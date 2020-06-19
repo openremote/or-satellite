@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using or_satellite.Models;
 using System;
 using System.Xml;
+using Newtonsoft.Json.Linq;
 
 namespace or_satellite.Controllers
 {
@@ -22,58 +23,69 @@ namespace or_satellite.Controllers
             this.locSearch = locSearch;
         }
 
-        /*[HttpGet("downloadMapData")]
-        public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
-        {
-            date ??= DateTime.Now;
-            return await copernicus.GetId(latitude, longitude, Convert.ToDateTime(date));
-        }*/
-
-        /*[HttpGet("process")]
-        public void Process(DateTime date)
-        {
-            copernicus.ProcessData(date);
-        }*/
-
         [HttpGet("getValue")]
-        public async Task<string> GetValues(string longitude, string latitude, DateTime? date = null)
+        public async Task<ActionResult> GetValues(string longitude, string latitude, string? date)
         {
-            string result = "the request could not be handled";
+            DateTime DateTimeDate;
+            JObject result = JObject.Parse(@"{ 'Error': 'The request could not be handled.' }");
 
-            if (!date.HasValue)
+
+            if (string.IsNullOrEmpty(date))
             {
-                date = DateTime.Now;
+                DateTimeDate = DateTime.Now;
             }
-                
-            
+            else
+            {
+                DateTimeDate = Convert.ToDateTime(date);
+            }
 
-            SearchResultModel output = locSearch.Search(latitude, longitude, Convert.ToDateTime(date));
+            SearchResultModel output = locSearch.Search(latitude, longitude, DateTimeDate);
 
             switch (output.searchResult)
             {
                 case SearchResultEnum.dataNotAvialable:
-                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
                     if (output.searchResult == SearchResultEnum.noDatasetFound)
                     {
-                        result = "No dataset available!";
+                        result = JObject.Parse(@"{ 'Error': 'No Dataset Available!' }");
                         break;
                     }
-                    result = locSearch.execute(output);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
                 case SearchResultEnum.missingFiles:
-                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), Convert.ToDateTime(date));
+                    output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
                     if (output.searchResult == SearchResultEnum.noDatasetFound)
                     {
-                        result = "No dataset available!";
+                        result = JObject.Parse(@"{ 'Error': 'No Dataset Available!' }");
                         break;
                     }
-                    result = locSearch.execute(output);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
                 case SearchResultEnum.success:
-                    result = locSearch.execute(output);
+                    result = JObject.Parse(locSearch.execute(output));
                     break;
             }
-            return result;
+
+            if (result.ContainsKey("Error"))
+            {
+                return Content(result.ToString(), "application/json");
+            }
+
+            var ingestionDate = locSearch.FindIngestionDateTime(Convert.ToDateTime(date), output.id);
+
+            JObject cloudCoverage;
+            CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude, Convert.ToDateTime(ingestionDate)/*scandate meegeven*/);
+            try
+            {
+                cloudCoverage = await ccs.makeRequest();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("OpenWeatherMap could not be reached :(");
+            }
+            cloudCoverage = await ccs.makeRequest();
+            result.Merge(cloudCoverage);
+            return Content(result.ToString(), "application/json");
         }
     }
 }

@@ -47,10 +47,10 @@ namespace or_satellite.Service
 
             if (id == null)
                 return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.dataNotAvialable };//
-                
+
 
             System.Globalization.CultureInfo customCulture =
-                (System.Globalization.CultureInfo) System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+                (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
             customCulture.NumberFormat.NumberDecimalSeparator = ".";
 
             System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
@@ -78,9 +78,9 @@ namespace or_satellite.Service
                 Console.WriteLine("Invalid folder or missing files.");
                 //LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
                 // return locErr;
-                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.missingFiles }; 
+                return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, searchResult = SearchResultEnum.missingFiles };
             }
-            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, succes = true, searchResult = SearchResultEnum.success, id = id};
+            return new SearchResultModel { latitude = latitude, longitude = longitude, date = date, succes = true, searchResult = SearchResultEnum.success, id = id };
             #endregion
 
         }
@@ -92,7 +92,7 @@ namespace or_satellite.Service
             {
                 List<string> coordList = new List<string>();
                 List<Models.GeoCoordinate> vertices = new List<Models.GeoCoordinate>();
-                coordList.AddRange(line.Split(':')[1].Split(' '));
+                coordList.AddRange(line.Split(':')[2].Split(' '));
 
                 foreach (var coordinate in coordList)
                 {
@@ -112,6 +112,22 @@ namespace or_satellite.Service
             }
 
             return id;
+        }
+
+        public string FindIngestionDateTime(DateTime date, string id)
+        {
+            string ingestionDate;
+
+            foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
+            {
+                if (line.Split(":")[0] == id)
+                {
+                    ingestionDate = line.Split(":")[1].Replace("|",":");
+                    return ingestionDate;
+                }
+            }
+
+            return "";
         }
 
         public string execute(SearchResultModel resultModel)
@@ -146,13 +162,12 @@ namespace or_satellite.Service
 
                 //////////////////////////////////////////////////////////
                 coordinateList.Add(new GeoCoordinate(newLat, newLong));
-                Console.WriteLine($"{newLat},{newLong}");
+                // Console.WriteLine($"{newLat},{newLong}");
 
             }
 
             if (coordinateList.Count == 0)
             {
-                stopwatch.Stop();
                 LocationObject locErr = new LocationObject(0, "", 0, 0, 0, 0, false, stopwatch.Elapsed);
                 string errorObject = JsonConvert.SerializeObject(locErr);
                 Console.WriteLine(errorObject);
