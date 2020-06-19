@@ -23,23 +23,8 @@ namespace or_satellite.Controllers
             this.locSearch = locSearch;
         }
 
-        //OBSOLETE
-
-        /*[HttpGet("downloadMapData")]
-        public async Task<string> GetId(double latitude, double longitude, DateTime? date = null)
-        {
-            date ??= DateTime.Now;
-            return await copernicus.GetId(latitude, longitude, Convert.ToDateTime(date));
-        }*/
-
-        /*[HttpGet("process")]
-        public void Process(DateTime date)
-        {
-            copernicus.ProcessData(date);
-        }*/
-
         [HttpGet("getValue")]
-        public async Task<string> GetValues(string longitude, string latitude, string? date)
+        public async Task<ActionResult> GetValues(string longitude, string latitude, string? date)
         {
             DateTime DateTimeDate;
             JObject result = JObject.Parse(@"{ 'Error': 'The request could not be handled.' }");
@@ -56,28 +41,12 @@ namespace or_satellite.Controllers
 
             SearchResultModel output = locSearch.Search(latitude, longitude, DateTimeDate);
 
-            /*switch (output.searchResult)
-            {
-                case SearchResultEnum.dataNotAvialable:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
-                    result = JObject.Parse(locSearch.execute(output));
-                    break;
-                case SearchResultEnum.missingFiles:
-                    await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
-                    result = JObject.Parse(locSearch.execute(output));
-                    break;
-                case SearchResultEnum.success:
-                    result = JObject.Parse(locSearch.execute(output));
-                    break;
-            }*/
-
             switch (output.searchResult)
             {
                 case SearchResultEnum.dataNotAvialable:
                     output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
                     if (output.searchResult == SearchResultEnum.noDatasetFound)
                     {
-                        // result = "No dataset available!";
                         result = JObject.Parse(@"{ 'Error': 'No Dataset Available!' }");
                         break;
                     }
@@ -87,7 +56,6 @@ namespace or_satellite.Controllers
                     output = await copernicus.GetId(Convert.ToDouble(latitude), Convert.ToDouble(longitude), DateTimeDate);
                     if (output.searchResult == SearchResultEnum.noDatasetFound)
                     {
-                        // result = "No dataset available!";
                         result = JObject.Parse(@"{ 'Error': 'No Dataset Available!' }");
                         break;
                     }
@@ -100,11 +68,13 @@ namespace or_satellite.Controllers
 
             if (result.ContainsKey("Error"))
             {
-                return result.ToString();
+                return Content(result.ToString(), "application/json");
             }
 
-            JObject cloudCoverage = new JObject();
-            CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude, DateTime.Now/*scandate meegeven*/);
+            var ingestionDate = locSearch.FindIngestionDateTime(Convert.ToDateTime(date), output.id);
+
+            JObject cloudCoverage;
+            CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude, Convert.ToDateTime(ingestionDate)/*scandate meegeven*/);
             try
             {
                 cloudCoverage = await ccs.makeRequest();
@@ -115,7 +85,7 @@ namespace or_satellite.Controllers
             }
             cloudCoverage = await ccs.makeRequest();
             result.Merge(cloudCoverage);
-            return result.ToString();
+            return Content(result.ToString(), "application/json");
         }
     }
 }
