@@ -47,17 +47,22 @@ namespace or_satellite.Service
         {
             // logger.LogInformation("Checking directories...");
             CheckBaseDirectories();
-            
+
             // logger.LogInformation("Searching file...");
             string endOfDay = $"{date:yyyy-MM-dd}T23:59:59.999Z";
             string startOfDay = $"{date:yyyy-MM-dd}T00:00:00.000Z";
 
-            string requestUri = $"https://scihub.copernicus.eu/dhus/search?q=( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
+            string requestUri = "https://scihub.copernicus.eu/dhus/search?q=" +
+                                $"( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
+                                $"( ingestionDate:[{startOfDay} TO {endOfDay} ] ) AND " +
+                                "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND " +
+                                "instrumentshortname:OLCI AND productlevel:L2))";
+                                /*$"( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
                                 $"( beginPosition:[{startOfDay} TO {endOfDay}] AND " +
                                 $"endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
                                 "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
-                                "&sortedby=ingestiondate&order=desc";
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",Convert.ToBase64String(
+                                "&sortedby=ingestiondate&order=desc";*/
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(
                 System.Text.Encoding.ASCII.GetBytes(
                     $"{username}:{password}")));
             var result = await client.GetAsync(requestUri);
@@ -67,11 +72,11 @@ namespace or_satellite.Service
 
             XmlSerializer serializer = new XmlSerializer(typeof(feed));
             StringReader reader = new StringReader(response);
-            feed finalMessage = (feed) serializer.Deserialize(reader);
+            feed finalMessage = (feed)serializer.Deserialize(reader);
 
             if (finalMessage.entry == null)
             {
-                return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.noDatasetFound};
+                return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.noDatasetFound };
             }
 
             /*if (Directory.Exists($"/app/Copernicus/Processed/{date:dd-MM-yyy}/{finalMessage.entry[0].id}"))
@@ -84,7 +89,7 @@ namespace or_satellite.Service
             Directory.CreateDirectory($"/app/Copernicus/Processed/{date:dd-MM-yyyy}");
             File.AppendAllText($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt", metaData + "\n");
 
-            await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[1].Value);
+            await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[3].Value);
 
             return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.success };
         }
