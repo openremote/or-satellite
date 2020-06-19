@@ -14,27 +14,40 @@ namespace or_satellite.Service
     {
         private string longitude;
         private string latitude;
-        private string apiKey = "e7531acbe7d78f82b7352a46e9e8890a";
+        private string apiKey = "652042053c32ee4960b68118bbef9166";
         private Int32 endOfDay;
         private Int32 startOfDay;
+        private int scanDateTimeEpoch;
 
-        public CloudCoverageService(DateTime date, string ilatitude, string ilongitude)
+        public CloudCoverageService(DateTime date, string ilatitude, string ilongitude, DateTime scanDateTime)
         {
 
             latitude = ilatitude;
             longitude = ilongitude;
             endOfDay = (Int32)((date.Date + new TimeSpan(23,59,59)).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
             startOfDay = (Int32)(date.Date.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            scanDateTimeEpoch = (Int32)((scanDateTime + new TimeSpan(23, 59, 59)).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
 
         public async Task<JObject> makeRequest()
         {
             HttpClient client = new HttpClient();
-            var response = await client.GetAsync($"http://history.openweathermap.org/data/2.5/history/city?lat={latitude}&lon={longitude}&type=hour&start={startOfDay}&end={endOfDay}&appid={apiKey}");
+            var response = await client.GetAsync($"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={latitude}&lon={longitude}&dt={startOfDay}&appid={apiKey}");
             string stringresult = await response.Content.ReadAsStringAsync();
-            OpenWeatherMapModel.Clouds OWMM = new OpenWeatherMapModel.Clouds();
-            OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel.Clouds>(stringresult);
-            int result = OWMM.all;
+            OpenWeatherMapModel.Rootobject OWMM = new OpenWeatherMapModel.Rootobject();
+            OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel.Rootobject>(stringresult);
+
+            OpenWeatherMapModel.Hourly closestMeasurement = new OpenWeatherMapModel.Hourly();
+            long min = long.MaxValue;
+
+            foreach (var item in OWMM.hourly)
+                if (Math.Abs(Convert.ToDateTime(item.dt).Ticks - Convert.ToDateTime(scanDateTimeEpoch).Ticks) < min)
+                {
+                    min = Math.Abs(Convert.ToDateTime(item.dt).Ticks - Convert.ToDateTime(scanDateTimeEpoch).Ticks);
+                    closestMeasurement = item;
+                }
+
+            int result = closestMeasurement.clouds;
             return JObject.Parse(result.ToString());
         }
     }
