@@ -76,7 +76,7 @@ namespace or_satellite.Controllers
             else
             {
                 JObject cloudCoverage = new JObject();
-                CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude);
+                CloudCoverageService ccs = new CloudCoverageService(DateTimeDate, latitude, longitude, /*scandate meegeven*/);
                 try
                 {
                     cloudCoverage = await ccs.makeRequest();
