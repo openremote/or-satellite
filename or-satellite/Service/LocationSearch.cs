@@ -92,7 +92,7 @@ namespace or_satellite.Service
             {
                 List<string> coordList = new List<string>();
                 List<Models.GeoCoordinate> vertices = new List<Models.GeoCoordinate>();
-                coordList.AddRange(line.Split(':')[1].Split(' '));
+                coordList.AddRange(line.Split(':')[2].Split(' '));
 
                 foreach (var coordinate in coordList)
                 {
@@ -112,6 +112,22 @@ namespace or_satellite.Service
             }
 
             return id;
+        }
+
+        public string FindIngestionDateTime(DateTime date, string id)
+        {
+            string ingestionDate;
+
+            foreach (var line in File.ReadLines($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt"))
+            {
+                if (line.Split(":")[0] == id)
+                {
+                    ingestionDate = line.Split(":")[1].Replace("|",":");
+                    return ingestionDate;
+                }
+            }
+
+            return "";
         }
 
         public string execute(SearchResultModel resultModel)

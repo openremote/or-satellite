@@ -27,7 +27,7 @@ namespace or_satellite.Service
             longitude = ilongitude;
             endOfDay = (Int32)((date.Date + new TimeSpan(23,59,59)).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
             startOfDay = (Int32)(date.Date.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-            scanDateTimeEpoch = (Int32)((scanDateTime + new TimeSpan(23, 59, 59)).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            scanDateTimeEpoch = (Int32)(scanDateTime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
 
         public async Task<JObject> makeRequest()
@@ -38,17 +38,10 @@ namespace or_satellite.Service
             OpenWeatherMapModel OWMM = new OpenWeatherMapModel();
             OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel>(stringresult);
 
-            Hourly closestMeasurement = new Hourly();
-            long min = long.MaxValue;
+            //find 'Hourly' closest to scan time
+            Hourly FoundItem = OWMM.hourly.OrderBy(x => Math.Abs(x.dt - scanDateTimeEpoch)).First();
 
-            foreach (var item in OWMM.hourly)
-                if (Math.Abs(new DateTime(1970, 1, 1).AddSeconds(item.dt).Ticks - new DateTime(1970,1,1).AddSeconds(scanDateTimeEpoch).Ticks) < min)
-                {
-                    min = Math.Abs(new DateTime(1970, 1, 1).AddSeconds(item.dt).Ticks - new DateTime(1970, 1, 1).AddSeconds(scanDateTimeEpoch).Ticks);
-                    closestMeasurement = item;
-                }
-
-            int result = closestMeasurement.clouds;
+            int result = FoundItem.clouds;
             string dataQuality = "high";
             if (result > 33)
             {
@@ -58,10 +51,7 @@ namespace or_satellite.Service
                     dataQuality = "low";
                 }
             }
-            /*JObject idk = new JObject();
-            idk = JObject.Parse(@"{ 'Error': '" + result.ToString() + @"' };");*/
-            return JObject.Parse($"{{'clouds': '{result}', 'dataQuality': '{dataQuality}'}}");
-            // return idk;
+            return JObject.Parse($"{{'clouds': {result}, 'dataQuality': '{dataQuality}'}}");
         }
     }
 }

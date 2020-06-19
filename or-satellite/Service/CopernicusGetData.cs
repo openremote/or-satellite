@@ -27,7 +27,7 @@ namespace or_satellite.Service
         private DatasetFootprintCheck geoCalculator = new DatasetFootprintCheck();
 
         private static readonly Progress<double> MyProgress = new Progress<double>();
-        private static double old = 0;
+        private static double _old = 0;
         // private readonly ILogger logger;
 
         /*public CopernicusGetData(string username, string password, ILogger logger)
@@ -57,11 +57,6 @@ namespace or_satellite.Service
                                 $"( ingestionDate:[{startOfDay} TO {endOfDay} ] ) AND " +
                                 "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND " +
                                 "instrumentshortname:OLCI AND productlevel:L2))";
-                                /*$"( footprint:\"Intersects({latitude}, {longitude})\" ) AND " +
-                                $"( beginPosition:[{startOfDay} TO {endOfDay}] AND " +
-                                $"endPosition:[{startOfDay} TO {endOfDay}] ) AND " +
-                                "( (platformname:Sentinel-3 AND filename:S3A_* AND producttype:OL_2_LFR___ AND instrumentshortname:OLCI AND productlevel:L2))" +
-                                "&sortedby=ingestiondate&order=desc";*/
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(
                 System.Text.Encoding.ASCII.GetBytes(
                     $"{username}:{password}")));
@@ -85,13 +80,13 @@ namespace or_satellite.Service
             var metaData = finalMessage.entry[0].str[1].Value;
             Regex pattern = new Regex(@"(?:<gml:coordinates>)(.*.)(?:<)");
             metaData = pattern.Match(metaData).Groups[1].ToString()/*.Replace(" ", ";\n")*/;
-            metaData = $"{finalMessage.entry[0].id}:{metaData}";
+            metaData = $"{finalMessage.entry[0].id}:{finalMessage.entry[0].date[3].Value.ToString().Replace(":", "|")}:{metaData}";
             Directory.CreateDirectory($"/app/Copernicus/Processed/{date:dd-MM-yyyy}");
             File.AppendAllText($"/app/Copernicus/Processed/{date:dd-MM-yyyy}/metadata.txt", metaData + "\n");
 
             await DownloadMapData($"'{finalMessage.entry[0].id}'", finalMessage.entry[0].title, finalMessage.entry[0].date[3].Value);
 
-            return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, searchResult = SearchResultEnum.success };
+            return new SearchResultModel { latitude = latitude.ToString(), longitude = longitude.ToString(), date = date, id = finalMessage.entry[0].id, searchResult = SearchResultEnum.success };
         }
 
         private async Task DownloadMapData(string id, string title, DateTime ingestionDate)
@@ -101,10 +96,10 @@ namespace or_satellite.Service
             {
                 value = Math.Round(value);
 
-                if (value == old)
+                if (value == _old)
                 {
                     Console.WriteLine(value + "% downloaded ");
-                    old = value + 10;
+                    _old = value + 10;
                 }
             };
             CopernicusService service = new CopernicusService(username, password);
@@ -204,41 +199,6 @@ namespace or_satellite.Service
             };
             process.Start();
             process.WaitForExit();
-        }
-
-        private IEnumerable<string> ExecuteCommandWithOutput(string command)
-        {
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"{command}\"",
-                    RedirectStandardInput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                }
-            };
-            process.Start();
-            string readConsole = process.StandardOutput.ReadToEnd().Replace("n", "\n");
-            IEnumerable<string> output = SetResultToArray(readConsole);
-            process.WaitForExit();
-
-            return output;
-        }
-
-        public IEnumerable<string> GetLocationInfo(string longitude, string latitude, DateTime date)
-        {
-            string command = $"./LocSearchCore -coords {latitude} {longitude} {date:dd-MM-yyyy}/";
-            IEnumerable<string> output = ExecuteCommandWithOutput(command);
-
-            return output;
-        }
-
-        private IEnumerable<string> SetResultToArray(string input)
-        {
-            IEnumerable<string> result = input.Split("\n");
-            return result;
         }
 
         private void CheckBaseDirectories()
