@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 
 namespace or_satellite.Service
@@ -34,21 +35,33 @@ namespace or_satellite.Service
             HttpClient client = new HttpClient();
             var response = await client.GetAsync($"https://api.openweathermap.org/data/2.5/onecall/timemachine?lat={latitude}&lon={longitude}&dt={startOfDay}&appid={apiKey}");
             string stringresult = await response.Content.ReadAsStringAsync();
-            OpenWeatherMapModel.Rootobject OWMM = new OpenWeatherMapModel.Rootobject();
-            OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel.Rootobject>(stringresult);
+            OpenWeatherMapModel OWMM = new OpenWeatherMapModel();
+            OWMM = JsonConvert.DeserializeObject<OpenWeatherMapModel>(stringresult);
 
-            OpenWeatherMapModel.Hourly closestMeasurement = new OpenWeatherMapModel.Hourly();
+            Hourly closestMeasurement = new Hourly();
             long min = long.MaxValue;
 
             foreach (var item in OWMM.hourly)
-                if (Math.Abs(Convert.ToDateTime(item.dt).Ticks - Convert.ToDateTime(scanDateTimeEpoch).Ticks) < min)
+                if (Math.Abs(new DateTime(1970, 1, 1).AddSeconds(item.dt).Ticks - new DateTime(1970,1,1).AddSeconds(scanDateTimeEpoch).Ticks) < min)
                 {
-                    min = Math.Abs(Convert.ToDateTime(item.dt).Ticks - Convert.ToDateTime(scanDateTimeEpoch).Ticks);
+                    min = Math.Abs(new DateTime(1970, 1, 1).AddSeconds(item.dt).Ticks - new DateTime(1970, 1, 1).AddSeconds(scanDateTimeEpoch).Ticks);
                     closestMeasurement = item;
                 }
 
             int result = closestMeasurement.clouds;
-            return JObject.Parse(result.ToString());
+            string dataQuality = "high";
+            if (result > 33)
+            {
+                dataQuality = "medium";
+                if (result > 66)
+                {
+                    dataQuality = "low";
+                }
+            }
+            /*JObject idk = new JObject();
+            idk = JObject.Parse(@"{ 'Error': '" + result.ToString() + @"' };");*/
+            return JObject.Parse($"{{'clouds': '{result}', 'dataQuality': '{dataQuality}'}}");
+            // return idk;
         }
     }
 }

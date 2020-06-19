@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 
 namespace or_satellite.Models
 {
-    public class OpenWeatherMapModel
-    {
-        public class Rootobject
+        public class OpenWeatherMapModel
         {
             public float lat { get; set; }
             public float lon { get; set; }
@@ -49,5 +47,4 @@ namespace or_satellite.Models
             public string description { get; set; }
             public string icon { get; set; }
         }
-    }
 }

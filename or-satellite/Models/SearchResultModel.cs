@@ -8,10 +8,10 @@ namespace or_satellite.Models
     public class SearchResultModel
     {
         public bool succes = false;
+        public string id;
         public string latitude;
         public string longitude;
-        public string date;
+        public DateTime date;
         public SearchResultEnum searchResult;
-        public string folderpath;
     }
 }
