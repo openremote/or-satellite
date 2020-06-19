@@ -37,7 +37,7 @@ namespace or_satellite.Controllers
         }*/
 
         [HttpGet("getValue")]
-        public async Task<string> GetValues(string longitude, string latitude, string date = null)
+        public async Task<string> GetValues(string longitude, string latitude, string? date)
         {
             DateTime DateTimeDate;
             JObject result = JObject.Parse(@"{ 'Error': 'The request could not be handled.' }");
