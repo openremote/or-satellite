@@ -1,5 +1,5 @@
 # or-satellite
-Service to connect to satellite data
+Service to connect to satellite data to OpenRemote such that e.g. air quality data can be retrieved for a specific location. This is a proof of concept.
 
 ## Requirements
 
